@@ -1,0 +1,21 @@
+{
+	"drivers": {
+		"driver_1": {
+			"number": "5551234567"
+			"provider": "someprovider"
+			}
+		"driver_2": {
+			"number": "5552222222"
+			"provider": "driver_2_provider"
+			}
+		}
+	"providers": {
+		"someprovider": "@someadress.net"
+		"driver_2_provider": "@driver2.net"
+		}
+	"routes": {
+		"route_1": "driver_1"
+		"route_2": "driver_2"
+		}
+}
+
