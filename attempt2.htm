@@ -6,34 +6,34 @@
 	<!-- load the database -->
 	<script type="text/javascript" src="database.js"></script>
 	<!-- build the options -->
+	<select size="10" id="driversel" multiple></select>
+	<select size="10" id="routesel" multiple></select>
 	<script type="text/javascript">
-		function buld_sel(list) {
-			//make the select
-			var sel = document.createElement("select");
-			document.write("made the sel")
-			//make a loop
-			var index = 0;
-			var item = null;
-			document.writ("looping!")
-			do {
-				//make a new option
-				var ball = document.createElement("option");
-				//set the item
-				item = list[index];
-				//make the value the item
-				ball.value = item;
-				document.write("made a new option")
-				//make the text the name
-				document.write("its name is" + item.name)
-				ball.text = item.name;
-				//add the new option to the selection
-				sel.add(ball, null);
-				//increment index
-				index = index + 1;
-			} while (index < list.length);
-		}
-		build_sel(driverlist);
-		build_sel(routelist);
+	const SIZE = 10;
+	document.writeln(routelist);
+	function build_sel(list, sel) {
+		//make a loop
+		var index = 0;
+		var item = null;
+		do {
+			//make a new option
+			var ball = document.createElement("option");
+			//set the item
+			item = list[index];
+			//make the value the item
+			ball.value = item;
+			//make the text the name
+			ball.text = item.name;
+			//add the new option to the selection
+			sel.add(ball, null);
+			//increment index
+			index = index + 1;
+		} while (index < list.length);
+	}
+	var driversel = document.getElementById("driversel");
+	build_sel(driverlist, driversel);
+	var routesel = document.getElementById()
+	build_sel(routelist, routesel);
 	</script>
 </body>
 </html>

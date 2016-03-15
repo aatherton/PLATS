@@ -1,27 +1,5 @@
-//function buld_sel(list){
-//	//make the select
-//	var sel = document.createElement("select");
-//	//make a loop
-//	var index = 0;
-//	var item = null;
-//	do {
-//		//make a new option
-//		var ball = document.createElement("option");
-//		//set the item
-//		item = list[index];
-//		//make the value the item
-//		ball.value = item;
-//		//make the text the name
-//		ball.text = item.name;
-//		//add the new option to the selection
-//		sel.add(ball, null);
-//		//increment index
-//		index = index + 1;
-//	} while (index < list.length);
-//}
-// put in lists to store all data
-var driverlist = [];
-var routelist = [];
+var driverlist = new Array();
+var routelist = new Array();
 // make the classes
 class provider {
 	//providers have string names and urls.
@@ -62,7 +40,17 @@ const JaneDoe = new driver("Jane Doe", "janesnumber", verizon);
 driverlist.push(JaneDoe);
 //put in routes
 const routeJohn = new route("route John", John);
+document.writeln("routejohn added")
+document.writeln(routeJohn.name);
+document.writeln(routeJohn.email);
 //again, add routes as we make them
 routelist.push(routeJohn);
+document.writeln("johnpushed")
+document.writeln(routelist)
 const routeJane = new route("route Jane", JaneDoe);
-routelist.push(routeJane)
+document.writeln("jane added")
+document.writeln(routeJane.name);
+document.writeln(routeJane.email);
+routelist.push(routeJane);
+document.writeln("jane pushed");
+document.writeln(routelist);
