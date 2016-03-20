@@ -8,7 +8,6 @@ class provider {
 		this.url = url;
 	}
 }
-
 class driver {
 	//drivers are the main important class where most storage is done
 	constructor(name, number, provider){
@@ -32,25 +31,18 @@ class route {
 //put in the providers. this must be done in order, or it'll crash due to dependancies
 const att = new provider("att", "@att.url");
 const verizon = new provider("verizon", "@verizon.url");
+const google = new provider("test provider", "@gmail.com");
 //put in drivers. note that numbers are stored as strings
 const JohnDoe = new driver("John Doe", "jonniesnumber", att);
 //add drivers to the list as we make them
 driverlist.push(JohnDoe);
 const JaneDoe = new driver("Jane Doe", "janesnumber", verizon);
 driverlist.push(JaneDoe);
+const testdriver = new driver("test E-mail", "paladinneph", google);
+driverlist.push(testdriver);
 //put in routes
-const routeJohn = new route("route John", John);
-document.writeln("routejohn added")
-document.writeln(routeJohn.name);
-document.writeln(routeJohn.email);
+const routeJohn = new route("route John", JohnDoe);
 //again, add routes as we make them
 routelist.push(routeJohn);
-document.writeln("johnpushed")
-document.writeln(routelist)
 const routeJane = new route("route Jane", JaneDoe);
-document.writeln("jane added")
-document.writeln(routeJane.name);
-document.writeln(routeJane.email);
 routelist.push(routeJane);
-document.writeln("jane pushed");
-document.writeln(routelist);
