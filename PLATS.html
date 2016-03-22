@@ -1,0 +1,74 @@
+<html>
+<head>
+<title>Penske Logistics Automated Textmail System</title>
+</head>
+<body>
+	<!-- load the database -->
+	<script type="text/javascript" src="database.js"></script>
+	<!-- build the options -->
+	<select size="10" id="driversel" multiple onchange="buildfinalemail(this, 'flag')"></select>
+	<script type="text/javascript">
+	function buildfinalemail(sel1, sel2) {
+		//reset
+		finalemail = "";
+		//iterate over sel 1
+		var ball = sel1.selectedOptions;
+		//set up loop
+		var index = 0;
+		var item = null;
+		do {
+			//for each item
+			item = ball[index];
+			//add the value to finalemail
+			finalemail = finalemail + item.value;
+			//if we're gonna loop, add a comma
+			if (index + 1 < ball.length){
+				finalemail = finalemail + "; "
+			}
+			//increment index
+			index = index + 1
+		} while (index < ball.length)
+		//if sel2 != flag, set sel2 to sel1, sel2 to flag, and iterate
+		if (sel2 != "flag"){
+			buildfinalemail(sel2, "flag");
+		}
+	}
+	const SIZE = 10;
+	function clearsel(sel) {
+		//set up a loop
+		do {
+			sel.remove(0);
+		} while (sel.options.length > 0);
+	}
+	function build_sel(list, sel) {
+		clearsel(sel);
+		//make a loop
+		var index = 0;
+		var item = null;
+		do {
+			//make a new option
+			var ball = document.createElement("option");
+			//set the item
+			item = list[index];
+			//make the value the item
+			ball.value = item.email;
+			//make the text the name
+			ball.text = item.name;
+			//add the new option to the selection
+			sel.add(ball, null);
+			//increment index
+			index = index + 1;
+		} while (index < list.length);
+	}
+	const driversel = document.getElementById("driversel");
+	build_sel(driverlist, driversel);
+	var SWITCHER = new Map();
+	SWITCHER.set(driverlist, routelist);
+	SWITCHER.set(routelist, driverlist);
+	var current = driverlist;
+	</script>
+	<!-- add the button -->
+	<button onclick="current = SWITCHER.get(current); build_sel(current, driversel)">switch from drivers to routes</button>
+	<button onclick="document.write(finalemail)">retrieve text adress E-mail</button>
+</body>
+</html>
