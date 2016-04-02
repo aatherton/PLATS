@@ -1,0 +1,41 @@
+<html>
+<head><title>PLATS</title></html>
+<body>
+<script>
+// this is where the database will be.
+//for testing purposes, I'm doing it manually
+var routedump = "KC100,Jane Doe,555123456,ATT\nKC200,John Doe,555johndoenumber,Verizon";
+
+var providerdump = "ATT,@JaneDoe.net\nVerizon,@JohnDoe.net";
+</script>
+<script>
+//first we need to process the database
+function databaseprep(){
+var providerdata = new Map();
+for each (line in providerdump.split("\n") {
+	var ball = line.split(",");
+	providerdata.set(ball[1], ball[2]);
+}
+var routedata = []
+for each (line in routedump.split("\n")) routedata.push(line.split(","));
+}
+//now we need to get and process the data
+function dataprep(data){
+
+}
+function update_lasttime(data) {
+//takes an array of arrays, returns the maximum time value
+}
+function process(line, database, lasttime) {
+// takes an array, returns false if is shouldn't be there, returns a corrected array if it should
+}
+function build_message(data) {
+// takes an array of arrays and returns a string that will be sent to the user.
+}
+function cull(data, database, lasttime) {
+// takes an array of arrays, removes entries and values that are invalid
+}
+
+</script>
+</body>
+</html>

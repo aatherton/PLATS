@@ -1,0 +1,67 @@
+<html>
+<head><title>Penske Logistics Automated Textmail System</title></head>
+<body>
+<script>
+var last_time = 0
+function mainsubmit_click(data){
+const COMPLAINT = "complaint"
+const URGENT = "ugent"
+const POSITIONS = new map();
+POSITIONS.set("type", 1);
+POSITIONS.set("route", 3);
+POSITIONS.set("time", 5);
+POSITIONS.set("payload", 10);
+// get the data from the textbox
+data = data.split("\n");
+// for each line
+var line = 0;
+var ball = null;
+var temptime = 0;
+var outgoing = new map();
+do {
+	// make it a temporary array
+	ball = data[line];
+	ball = ball.split(",")
+	// if the type is complaint or urgent
+	if (ball[POSITIONS["type"]] == COMPLAINT||URGENT) {
+		// if the time is after last
+		if (ball[POSITIONS["time"]] < last_time){
+			if (ball[POSITIONS["time"]] > temptime) temptime = ball[POSITIONS["time"]];
+			// if the route is present in the outgoing keys
+			if (ball[POSITIONS["route"]] in outgoing) {
+				// concatinate <br> to outgoing.route
+				outgoing[route] = outgoing[route] + "<br>";
+				// concatinate message to outgoing.route
+				outgoing[route] = outgoing[route] + ball[POSITIONS["payload"]];
+			} else {
+				// add route : message to outgoing
+				outgoing.set(ball[POSITIONS["route"]], ball[POSITIONS["payload"]]);
+			}
+		}
+	}
+	line = line + 1;
+} while(line < data.length);
+// make a final result string
+var result = "";
+// get the lookup values from the module
+// import the database
+
+// for each in outgoing keys
+for each (var key in outgoing.keys) {
+	// concatinate email to result
+	result = result + lookup[key];
+	// concatinate two breaks to result
+	result = result + "<br><br>";
+	// concatinate outgoing.key to result
+	outgoing[key];
+}
+// update last time
+last_time = temptime;
+// display result in the textbox
+document.getElementById("maininput").value = result;
+}
+</script>
+<textarea id="maininput" rows="20" cols="100"></textarea>
+<button id="mainsubmit" onclick="mainsubmit_click(self.value)">enter</button>
+</body>
+</html>
