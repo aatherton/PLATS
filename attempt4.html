@@ -9,33 +9,95 @@ var routedump = "KC100,Jane Doe,555123456,ATT\nKC200,John Doe,555johndoenumber,V
 var providerdump = "ATT,@JaneDoe.net\nVerizon,@JohnDoe.net";
 </script>
 <script>
+//constants we haz them
+var constants = new Map();
+constants.set("complaint", "CMPL");
+constants.set("urgent", "URGT");
+constants.set("type", 8);
+constants.set("route", 5);
+constants.set("time", 9);
+constants.set("payload", 10);
+constants.set("tab", "	");
+/*
+const COMPLAINT = "CMPL"
+const URGENT = "URGT"
+var POSITIONS = new map();
+POSITIONS.set("type", 8);
+POSITIONS.set("route", 5);
+POSITIONS.set("time", 9);
+POSITIONS.set("payload", 10);
+LASTTIME = 0
+TEMPTIME = 0
+*/
 //first we need to process the database
-function databaseprep(){
-var providerdata = new Map();
-for each (line in providerdump.split("\n") {
-	var ball = line.split(",");
-	providerdata.set(ball[1], ball[2]);
-}
-var routedata = []
-for each (line in routedump.split("\n")) routedata.push(line.split(","));
+function databaseprep(routedump, providerdump){
+	var providerdata = new Map();
+	for (line in providerdump.split("\n")) {
+		var ball = line.split(",");
+		providerdata.set(ball[1], ball[2]);
+	}
+	ball = []
+	for (line in routedump.split("\n")) ball.push(line.split(","));
+	routedata = new Map()
+	for (route in ball) {
+		routedata.set(route[0], route[2])
+		routedata[route[0]] = routedata[route[0]] + providerdata[route[3]];
+	}
+	return routedata
 }
 //now we need to get and process the data
-function dataprep(data){
-
+function dataprep(data, database){
+	console.log(data.split("\n"))
+	var result = new Map;
+	var ball = null;
+	var arrghh = data.split("\n")
+	for (line in arrghh) {
+		console.log(arrghh[line]);
+		ball = process(line, database);
+		if (ball !== false) {
+		result[ball[0]] = result[ball[0]] + "\n"
+		result[ball[0]] = result[ball[0]] + ball[1];
+		}
+	}
+	constants["lasttime"] = constants["temptime"];
+	return result;
 }
-function update_lasttime(data) {
-//takes an array of arrays, returns the maximum time value
+function timehandler(time) {
+//takes a string, spits out a float in the format of [hours].[minutes]
+	time = time.split(":");
+	var result = time[0];
+	result = result + time[1] / 60
 }
-function process(line, database, lasttime) {
+function process(line, database) {
 // takes an array, returns false if is shouldn't be there, returns a corrected array if it should
+	line = line.split(constants["tab"]);
+	if (line[constants["type"]] !== constants["ugent"] || constants["complaint"]) return false;
+	line[constants["time"]] = timehandler(line[constants["time"]]);
+	if (line[constants["time"]] < constants["lasttime"]) return false;
+	constants["temptime"] = line[constants["time"]];
+	var result = [];
+	result.push(database[line[constants["route"]]]);
+	result.push(line[constants["payload"]]);
 }
 function build_message(data) {
-// takes an array of arrays and returns a string that will be sent to the user.
+// takes a map and returns a string that will be sent to the user.
+	result = ""
+	for (key in data.keys()) {
+		result = result + key;
+		result = result + "\n";
+		result = result + data[key];
+		result = result + "\n\n"
+	}
 }
-function cull(data, database, lasttime) {
-// takes an array of arrays, removes entries and values that are invalid
+function mainsubmit_click(routedump, providerdump){
+	var database = databaseprep(routedump, providerdump);
+	var object = document.getElementById("maininput");
+	var data = object.value;
+	data = dataprep(data, database);
+	object.value = build_message(data);
 }
-
 </script>
 </body>
+<textarea id="maininput" rows="20" cols="100"></textarea>
+<button id="mainsubmit" onclick="mainsubmit_click(routedump, providerdump)">enter</button>
 </html>
