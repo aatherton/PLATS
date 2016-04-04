@@ -9,86 +9,53 @@ var routedump = "KC100,Jane Doe,555123456,ATT\nKC200,John Doe,555johndoenumber,V
 var providerdump = "ATT,@JaneDoe.net\nVerizon,@JohnDoe.net";
 </script>
 <script>
-//constants we haz them
-var constants = new Map();
-constants.set("complaint", "CMPL");
-constants.set("urgent", "URGT");
-constants.set("type", 8);
-constants.set("route", 5);
-constants.set("time", 9);
-constants.set("payload", 10);
-constants.set("tab", "	");
+//globals. we haz them
+const COMPLAINT = "CMPL";
+const URGENT = "URGT";
+const TYPE = 7;
+const ROUTE = 4;
+const TIME = 9;
+const PAYLOAD = 10;
+const TAB = "	";
+var LASTTIME = 0;
+var TEMPTIME = 0;
 // fun with functions
 function databaseprep(routedump, providerdump){
-	//takes the raw paste data from the database returns a map with routes as keys and correct E-mail adresses as values 
-	//first, we need to process the raw data on the providers into a map
-	var providerdata = new Map();
-	/* a long explanation on this. I originally coded this with something like:
-	 for (thing in [milk, eggs, suger) go get thing;
-	 expecting the program would go:
-	 go get milk;
-	 go get eggs;
-	 go get sugar;
-	 however, apparantly someone on javascript's design thought it would be a good idea to make it go
-	 go get 0;
-	 go get 1;
-	 go get 2;
-	 instead.
-	 this is an easy fix, but it requires the creation of a few variables.
-	 in a fit of frustration, I named these variables in such a way so as it spells out "rly? ytho?"
-	 I'm so sorry.
-	 but no, seriously, basically the easy fix goes: instead of
-	 
-	 for ([some variable] in [some iterable]) {
-	 [do stuff]
-	 }
-	 
-	 it goes
-	 
-	 var rly = [some iterable];
-	 for (ytho in rly){
-	 var [some value] = rly[ytho];
-	 [do stuff]
-	 }
-	 and executes in the exact same way.
-	*/
-	var rly = providerdump.split("\n");
-	// for line in the providerdump, split by line
-	for (ytho in rly) {
-		var line = rly[ytho];
+	//takes the raw paste data from the database returns an array with routes as keys and correct E-mail adresses as values 
+	//first, we need to process the raw data on the providers into an array
+	var providerdata = []
+	// for each line in the providerdump, split by line
+	for (line of providerdump.split("\n")) {
 		// split the line by commas
 		var ball = line.split(",");
-		// set the map the provider's name to the provider's e-mail extension
-		providerdata.set(ball[1], ball[2]);
+		// map the provider's name to the provider's e-mail extension
+		providerdata[ball[0]] = ball[1];
 	}
 	// "ball" is my default throw-away value. it's been used above, so I'm reseting it to an empty array here, to be used later
 	ball = []
 	var rly = routedump.split("\n");
 	// for each line in routedump, add that line to our throwaway value and split it by comma
-	for (ytho in rly) ball.push(rly[ytho].split(","));
+	for (line of routedump.split("\n")) ball.push(line.split(","));
 	// set up the final map that will be returned
-	routedata = new Map()
+	routedata = []
 	// for each route in the throw-away array we just made
-	for (rlyytho in ball) {
-		var route = ball[rlyytho];
+	for (route of ball) {
 		// map the route's name to the route's phone number
-		routedata.set(route[0], route[2])
+		routedata[route[0]] = route[2];
 		// tack the route's provider's e-mail extension on to the end to make the correct e-mail for that route.
 		routedata[route[0]] = routedata[route[0]] + providerdata[route[3]];
 	}
-	//return the resulting map
+	//return the resulting array
 	return routedata
 }
 function dataprep(data, database){
-	// takes the raw paste data from the input and returns a map with e-mails as keys and the message that e-mail needs to recieve as values.
-	// declare the map that will be returned
-	var result = new Map;
+	// takes the raw paste data from the input and returns an array with e-mails as keys and the message that e-mail needs to recieve as values.
+	// declare the array that will be returned
+	var result = []
 	// declare our friendly neighborhood throw-away variable
 	var ball = null;
 	// for each line in the raw paste data, seperated into lines
-	var rly = data.split("\n")
-	for (ytho in rly) {
-		var line = rly[ytho];
+	for (line of data.split("\n")) {
 		// process the line
 		ball = process(line, database);
 		// if it didn't return false, there's a message that needs to be sent to an e-mail
@@ -96,13 +63,13 @@ function dataprep(data, database){
 			// tack a new line onto the value currently mapped to that e-mail.
 			// note that if that e-mail hasn't been mapped to anything, it will automatically map it to a new line
 			// also note that the phone speaks html, so this new line character won't appear in the textarea, but will when sent
-			result[ball[0]] = result[ball[0]] + "<br>"
+			result[ball[0]] = result[ball[0]] + "<br>";
 			// tack on the message we want to send to that e-mail. this will result in a long list of messages, seperated by new lines
 			result[ball[0]] = result[ball[0]] + ball[1];
 		}
 	}
 	// update lasttime with temptime, which should be the maximum of the times we processed
-	constants["lasttime"] = constants["temptime"];
+	LASTTIME = TEMPTIME;
 	// return result
 	return result;
 }
@@ -120,43 +87,42 @@ function timehandler(time) {
 function process(line, database) {
 	// takes a tab-delimited string, returns false if is shouldn't be there, returns an array with 0 being the route's e-mail, and 1 being the message to be sent
 	// split the line by whatever tab is. is a constant, so can be expiremented with
-	line = line.split(constants["tab"]);
+	line = line.split(TAB);
 	// if the type isn't urgent or complaint, return false immediately
-	if (line[constants["type"]] !== constants["urgent"] || constants["complaint"]) return false;
+	if (!(line[TYPE] == URGENT || line[TYPE] == COMPLAINT)) return false;
 	// otherwise, reformat its time using timehandler
-	line[constants["time"]] = timehandler(line[constants["time"]]);
+	line[TIME] = timehandler(line[TIME]);
 	// if its time is less than the maximum time we processed last time, return false immediately
-	if (line[constants["time"]] < constants["lasttime"]) return false;
+	if (line[TIME] < LASTTIME) return false;
 	// otherwise, we have a valid message that has to go out!
 	// oh, if the line's time is greater than our current maximum time we're processing, update it
-	if (line[constants["time"]] > constants["temptime"]) constants["temptime"] = line[constants["time"]];
+	if (line[TIME] > TEMPTIME) TEMPTIME = line[TIME];
 	// declare our result array
 	var result = [];
 	// add the e-mail associated with this route to the result
-	result.push(database[line[constants["route"]]]);
+	result.push(database[line[ROUTE]]);
 	// add the message we need to send to the result
-	result.push(line[constants["payload"]]);
+	result.push(line[PAYLOAD]);
 	// return result
 	return result
 }
 function build_message(data) {
-	// takes a map and returns a string that will be sent to the user.
+	// takes an array and returns a string that will be sent to the user.
 	// declare the result
 	result = ""
 	// for each e-mail in the input
-	var rly = data.keys();
-	for (ytho in rly) {
-		var key = rly[ytho];
+	for (email in data) {
 		// add the e-mail to the result
-		result = result + key;
+		result = result + email;
 		// add in two new lines, for end-user readablity
 		result = result + "\n\n";
 		// add in the messages intended for that e-mail
-		result = result + data[key];
+		result = result + data[email];
 		// and lastly, more new lines
 		result = result + "\n\n";
 	}
 	// return result
+	console.log(result);
 	return result;
 }
 function mainsubmit_click(routedump, providerdump){
