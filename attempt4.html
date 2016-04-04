@@ -1,14 +1,10 @@
 <html>
 <head><title>PLATS</title></html>
 <body>
+<script src="database3.jsm"></script>
 <script>
-// this is where the database will be.
-//for testing purposes, I'm doing it manually
-var routedump = "KC100,Jane Doe,555123456,ATT\nKC200,John Doe,555johndoenumber,Verizon";
-
-var providerdump = "ATT,@JaneDoe.net\nVerizon,@JohnDoe.net";
-</script>
-<script>
+//this will stop the globals from reseting randomly
+var flag;
 //globals. we haz them
 const COMPLAINT = "CMPL";
 const URGENT = "URGT";
@@ -17,8 +13,15 @@ const ROUTE = 4;
 const TIME = 9;
 const PAYLOAD = 10;
 const TAB = "	";
-var LASTTIME = 0;
-var TEMPTIME = 0;
+var LASTTIME;
+var TEMPTIME;
+// set last and temptime
+if (!flag) {
+	LASTTIME = 0;
+	TEMPTIME = 0;
+	// set the flag to true, so this doesn't execute again
+	flag = true;
+}
 // fun with functions
 function databaseprep(routedump, providerdump){
 	//takes the raw paste data from the database returns an array with routes as keys and correct E-mail adresses as values 
@@ -60,12 +63,16 @@ function dataprep(data, database){
 		ball = process(line, database);
 		// if it didn't return false, there's a message that needs to be sent to an e-mail
 		if (ball !== false) {
-			// tack a new line onto the value currently mapped to that e-mail.
-			// note that if that e-mail hasn't been mapped to anything, it will automatically map it to a new line
-			// also note that the phone speaks html, so this new line character won't appear in the textarea, but will when sent
-			result[ball[0]] = result[ball[0]] + "<br>";
-			// tack on the message we want to send to that e-mail. this will result in a long list of messages, seperated by new lines
-			result[ball[0]] = result[ball[0]] + ball[1];
+			// if there's something mapped to that e-mail
+			if (ball[0] in result) {
+				// tack a new line onto the value currently mapped to that e-mail.
+				// note that the phone speaks html, so this new line character won't appear in the textarea, but will when sent
+				result[ball[0]] = result[ball[0]] + "<br>";
+				// tack on the message we want to send to that e-mail. this will result in a long list of messages, seperated by new lines
+				result[ball[0]] = result[ball[0]] + ball[1];
+			}
+			// otherwise, just map the message to that E-mail
+			else result[ball[0]] = ball[1];
 		}
 	}
 	// update lasttime with temptime, which should be the maximum of the times we processed
@@ -93,7 +100,7 @@ function process(line, database) {
 	// otherwise, reformat its time using timehandler
 	line[TIME] = timehandler(line[TIME]);
 	// if its time is less than the maximum time we processed last time, return false immediately
-	if (line[TIME] < LASTTIME) return false;
+	if (line[TIME] <= LASTTIME) return false;
 	// otherwise, we have a valid message that has to go out!
 	// oh, if the line's time is greater than our current maximum time we're processing, update it
 	if (line[TIME] > TEMPTIME) TEMPTIME = line[TIME];
@@ -122,7 +129,6 @@ function build_message(data) {
 		result = result + "\n\n";
 	}
 	// return result
-	console.log(result);
 	return result;
 }
 function mainsubmit_click(routedump, providerdump){
