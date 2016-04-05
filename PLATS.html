@@ -74,8 +74,6 @@ function dataprep(data, database){
 			else result[ball[0]] = ball[1];
 		}
 	}
-	// update lasttime with temptime, which should be the maximum of the times we processed
-	LASTTIME = TEMPTIME;
 	// return result
 	return result;
 }
@@ -130,8 +128,24 @@ function build_message(data) {
 	// return result
 	return result;
 }
+function numtotime(time) {
+	// takes a number from time handler, converts it back into a string
+	var result = ""
+	// set variable hours to time / 60, rounded down
+	var hours = Math.floor(time/60);
+	// set result to hours with a colon
+	result = hours + ":";
+	// reset hours, using it as a temp value. set it as time - hours * 60
+	hours = time - hours*60;
+	// add houre
+	result = result + hours
+	return result;
+}
 function mainsubmit_click(routedump, providerdump){
 	// this is what runs when the button is clicked
+	// set lasttime to the input
+	var teim = document.getElementById("timeinput");
+	LASTTIME = timehandler(teim.value);
 	// declare database as the result of preparing the raw data retrieved by the html
 	var database = databaseprep(routedump, providerdump);
 	// declare object as the input textarea for ease of use
@@ -142,8 +156,10 @@ function mainsubmit_click(routedump, providerdump){
 	data = dataprep(data, database);
 	// set the value of the textarea to the final string built by data
 	object.value = build_message(data);
+	// set the value of the time input to the final value of temptime
+	teim.value = numtotime(TEMPTIME);
 }
 </script>
-<button id="mainsubmit" onclick="mainsubmit_click(routedump, providerdump)">enter</button><br><textarea id="maininput" rows="20" cols="100"></textarea>
+<button id="mainsubmit" onclick="mainsubmit_click(routedump, providerdump)">enter</button><textarea id="timeinput" rows="1" cols="5"></textarea><br><textarea id="maininput" rows="20" cols="100"></textarea>
 </body>
 </html>
