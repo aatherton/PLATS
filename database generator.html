@@ -1,0 +1,88 @@
+<html><head><title>PLATS database generator</title></head>
+<textarea id="maininput" rows="20" cols="100"></textarea>
+<button id="mainsubmit" onclick="mainsubmit_click()">enter</button>
+<script>
+// functions
+function mainsubmit_click() {
+	// takes the data from maininput, processes it and resets it
+	// declare result
+	var result = "var EXPORTED_SYMBOLS = [routedump, providerdump];\n\nvar routedump = \"";
+	// set a variable, for ease of access
+	var textarea = document.getElementById("maininput");
+	// add the result from process routes note that:
+	// we know the first line is a header, so we can start at 1
+	// we are creating datadump by seperating the data by newline
+	result = result + process_routes(1, textarea.value.split("\n"));
+	// set textarea's value to result
+	textarea.value = result;
+}
+function process_routes(index, datadump){
+	// takes an integer, representing where we are, and the data entered by the user, split by line. returns a string
+	// declare result
+	var result = "";
+	// declare flag as true
+	var flag = true;
+	// loop infinitely until return
+	do {
+	// if flag is true, it's the first line, and we don't want a new line symbol
+	if (flag) {
+		// add this line to result
+		result = result + datadump[index];
+		// increment index
+		index = index + 1
+		// switch flag so this doesn't execute again
+		flag = false
+	}
+	else if (datadump[index] === "provider name	extension		") {
+		// add the break
+		result = result + "\";\n\nvar providerdump = \"";
+		// add the return from process providers
+		result = result + process_providers(index+1, datadump);
+		// return result
+		return result;
+	}
+	else {
+		// add the new line character
+		result = result + "!!!"
+		// add the line
+		result = result + datadump[index];
+		// increment index
+		index = index + 1;
+	}
+	} while (true);
+}
+function process_providers(index, datadump) {
+	// takes an integer, representing where we are, and the data entered by the user, split by line. returns a string
+	// declare result
+	var result = "";
+	// declare flag as true
+	var flag = true;
+	// loop infinitely until return
+	do {
+	// if flag is true, it's the first line, and we don't want a new line symbol
+	if (flag) {
+		// add this line to result
+		result = result + datadump[index];
+		// increment index
+		index = index + 1
+		// switch flag so this doesn't execute again
+		flag = false
+	}
+	else if ((datadump[index] == "") || (datadump[index] == null)) {
+		// add the break
+		result = result + "\";";
+		// return result
+		return result;
+	}
+	else{
+		// add the new line character
+		result = result + "!!!"
+		// add the line
+		result = result + datadump[index];
+		// increment index
+		index = index + 1
+	}
+	} while (true);
+}
+</script>
+</html>

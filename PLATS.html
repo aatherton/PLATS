@@ -1,74 +1,150 @@
 <html>
-<head>
-<title>Penske Logistics Automated Textmail System</title>
-</head>
+<head><title>Penske Logistics Automated Textmail System</title></html>
 <body>
-	<!-- load the database -->
-	<script type="text/javascript" src="database.js"></script>
-	<!-- build the options -->
-	<select size="10" id="driversel" multiple onchange="buildfinalemail(this, 'flag')"></select>
-	<script type="text/javascript">
-	function buildfinalemail(sel1, sel2) {
-		//reset
-		finalemail = "";
-		//iterate over sel 1
-		var ball = sel1.selectedOptions;
-		//set up loop
-		var index = 0;
-		var item = null;
-		do {
-			//for each item
-			item = ball[index];
-			//add the value to finalemail
-			finalemail = finalemail + item.value;
-			//if we're gonna loop, add a comma
-			if (index + 1 < ball.length){
-				finalemail = finalemail + "; "
+<script src="database.jsm"></script>
+<script>
+//this will stop the globals from reseting randomly
+var flag;
+//globals. we haz them
+const COMPLAINT = "CMPL";
+const URGENT = "URGT";
+const TYPE = 7;
+const ROUTE = 4;
+const TIME = 9;
+const PAYLOAD = 10;
+const TAB = "	";
+var LASTTIME;
+var TEMPTIME;
+// set last and temptime
+if (!flag) {
+	LASTTIME = 0;
+	TEMPTIME = 0;
+	// set the flag to true, so this doesn't execute again
+	flag = true;
+}
+// fun with functions
+function databaseprep(routedump, providerdump){
+	//takes the raw paste data from the database returns an array with routes as keys and correct E-mail adresses as values 
+	//first, we need to process the raw data on the providers into an array
+	var providerdata = []
+	// for each line in the providerdump, split by the line character I set
+	for (line of providerdump.split("!!!")) {
+		// split the line by tabs
+		var ball = line.split(TAB);
+		// map the provider's name to the provider's e-mail extension
+		providerdata[ball[0]] = ball[1];
+	}
+	// "ball" is my default throw-away value. it's been used above, so I'm reseting it to an empty array here, to be used later
+	ball = []
+	// for each line in routedump, add that line to our throwaway value and split it by tab
+	for (line of routedump.split("!!!")) ball.push(line.split(TAB));
+	// set up the final map that will be returned
+	routedata = []
+	// for each route in the throw-away array we just made
+	for (route of ball) {
+		// map the route's name to the route's phone number
+		routedata[route[0]] = route[2];
+		// tack the route's provider's e-mail extension on to the end to make the correct e-mail for that route.
+		routedata[route[0]] = routedata[route[0]] + providerdata[route[3]];
+	}
+	//return the resulting array
+	return routedata
+}
+function dataprep(data, database){
+	// takes the raw paste data from the input and returns an array with e-mails as keys and the message that e-mail needs to recieve as values.
+	// declare the array that will be returned
+	var result = []
+	// declare our friendly neighborhood throw-away variable
+	var ball = null;
+	// for each line in the raw paste data, seperated into lines
+	for (line of data.split("\n")) {
+		// process the line
+		ball = process(line, database);
+		// if it didn't return false, there's a message that needs to be sent to an e-mail
+		if (ball !== false) {
+			// if there's something mapped to that e-mail
+			if (ball[0] in result) {
+				// tack a new line onto the value currently mapped to that e-mail.
+				// note that the phone speaks html, so this new line character won't appear in the textarea, but will when sent
+				result[ball[0]] = result[ball[0]] + "<br>";
+				// tack on the message we want to send to that e-mail. this will result in a long list of messages, seperated by new lines
+				result[ball[0]] = result[ball[0]] + ball[1];
 			}
-			//increment index
-			index = index + 1
-		} while (index < ball.length)
-		//if sel2 != flag, set sel2 to sel1, sel2 to flag, and iterate
-		if (sel2 != "flag"){
-			buildfinalemail(sel2, "flag");
+			// otherwise, just map the message to that E-mail
+			else result[ball[0]] = ball[1];
 		}
 	}
-	const SIZE = 10;
-	function clearsel(sel) {
-		//set up a loop
-		do {
-			sel.remove(0);
-		} while (sel.options.length > 0);
+	// update lasttime with temptime, which should be the maximum of the times we processed
+	LASTTIME = TEMPTIME;
+	// return result
+	return result;
+}
+function timehandler(time) {
+	//takes a string, spits out an integer that is the total number of minuites
+	// split into two, by the colon
+	time = time.split(":");
+	// set the result to the hours value times 60
+	var result = parseInt(time[0], 10) * 60;
+	// add the minutes value
+	result = result + parseInt(time[1], 10);
+	//return result
+	return result
+}
+function process(line, database) {
+	// takes a tab-delimited string, returns false if is shouldn't be there, returns an array with 0 being the route's e-mail, and 1 being the message to be sent
+	// split the line by whatever tab is. is a constant, so can be expiremented with
+	line = line.split(TAB);
+	// if the type isn't urgent or complaint, return false immediately
+	if (!(line[TYPE] == URGENT || line[TYPE] == COMPLAINT)) return false;
+	// otherwise, reformat its time using timehandler
+	line[TIME] = timehandler(line[TIME]);
+	// if its time is less than the maximum time we processed last time, return false immediately
+	if (line[TIME] <= LASTTIME) return false;
+	// otherwise, we have a valid message that has to go out!
+	// oh, if the line's time is greater than our current maximum time we're processing, update it
+	if (line[TIME] > TEMPTIME) TEMPTIME = line[TIME];
+	// declare our result array
+	var result = [];
+	// add the e-mail associated with this route to the result
+	result.push(database[line[ROUTE]]);
+	// add the message we need to send to the result
+	result.push(line[PAYLOAD]);
+	// return result
+	return result
+}
+function build_message(data) {
+	// takes an array and returns a string that will be sent to the user.
+	// declare the result
+	result = ""
+	// for each e-mail in the input
+	for (email in data) {
+		// add the e-mail to the result
+		result = result + email;
+		// add in two new lines, for end-user readablity
+		result = result + "\n\n";
+		// add in the messages intended for that e-mail
+		result = result + data[email];
+		// and lastly, more new lines
+		result = result + "\n\n";
 	}
-	function build_sel(list, sel) {
-		clearsel(sel);
-		//make a loop
-		var index = 0;
-		var item = null;
-		do {
-			//make a new option
-			var ball = document.createElement("option");
-			//set the item
-			item = list[index];
-			//make the value the item
-			ball.value = item.email;
-			//make the text the name
-			ball.text = item.name;
-			//add the new option to the selection
-			sel.add(ball, null);
-			//increment index
-			index = index + 1;
-		} while (index < list.length);
-	}
-	const driversel = document.getElementById("driversel");
-	build_sel(driverlist, driversel);
-	var SWITCHER = new Map();
-	SWITCHER.set(driverlist, routelist);
-	SWITCHER.set(routelist, driverlist);
-	var current = driverlist;
-	</script>
-	<!-- add the button -->
-	<button onclick="current = SWITCHER.get(current); build_sel(current, driversel)">switch from drivers to routes</button>
-	<button onclick="document.write(finalemail)">retrieve text adress E-mail</button>
+	// return result
+	return result;
+}
+function mainsubmit_click(routedump, providerdump){
+	// this is what runs when the button is clicked
+	// declare database as the result of preparing the raw data retrieved by the html
+	var database = databaseprep(routedump, providerdump);
+	// declare object as the input textarea for ease of use
+	var object = document.getElementById("maininput");
+	// declare data as the value of the textarea
+	var data = object.value;
+	// alter data into a map using dataprep
+	data = dataprep(data, database);
+	// set the value of the textarea to the final string built by data
+	object.value = build_message(data);
+}
+</script>
 </body>
+<textarea id="maininput" rows="20" cols="100"></textarea>
+<button id="mainsubmit" onclick="mainsubmit_click(routedump, providerdump)">enter</button>
 </html>
